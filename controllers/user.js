@@ -1,5 +1,6 @@
 
 const { memoryStorage } = require("multer");
+const user = require("../models/user");
 const User = require("../models/user");
 
 //Actions prueba
@@ -20,11 +21,25 @@ const register = (req, res) => {
     }
     let usersaver = new User(params);
 
+    User.find({ $or: [
+        { email: usersaver.email.toLowerCase()},
+        { username: usersaver.username.toLowerCase()}
+    ]}).exec((error, users) => {
+        if(error) return res.status(500).json({status: "error", message: "Error en la consulta de usuarios"});
+    })
+        if(users && users.lenght >= 1){
+            return res.status(200).send({
+                status: "success",
+                message: "El usuario ya existe"
+            });
+        }
+
     return res.status(200).json({
         message: "Accion de registro de usuarios",
         params,
         usersaver
     })
+    
     
 }
 //Exportar  acciones
